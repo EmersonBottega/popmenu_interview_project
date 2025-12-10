@@ -1,0 +1,15 @@
+### List all menus
+GET http://localhost:3000/menus
+Accept: application/json
+
+### Show one menu
+GET http://localhost:3000/menus/298486374
+Accept: application/json
+
+### Show all menu items
+GET http://localhost:3000/menu_items
+Accept: application/json
+
+### Show one menu item
+GET http://localhost:3000/menu_items/980190962
+Accept: application/json
