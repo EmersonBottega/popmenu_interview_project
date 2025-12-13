@@ -1,6 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe RestaurantDataImporter, type: :service do
+  before do
+    Restaurant.destroy_all
+    Menu.destroy_all
+    MenuItem.destroy_all
+    MenuFoodItem.destroy_all
+  end
+
   let(:sample_data) do
     {
       "restaurants": [
@@ -48,10 +55,6 @@ RSpec.describe RestaurantDataImporter, type: :service do
   end
 
   subject(:importer) { described_class.new(sample_data) }
-
-  before do
-    Restaurant.destroy_all
-  end
 
   describe '#import! with valid data' do
     it 'returns success true' do
