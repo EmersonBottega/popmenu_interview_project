@@ -1,6 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-lunch:
-  id: 298486374
-  name: Lunch
-  restaurant_id: 64810937
+one:
+  name: Daily Specials
+  restaurant: one
+two:
+  name: Dessert Menu
+  restaurant: one

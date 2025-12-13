@@ -1,12 +1,13 @@
 class MenusController < ApplicationController
-  before_action :set_menu, only: %i[show update destroy]
+  before_action :set_menu, only: %i[show update destroy add_item]
 
   def index
-    if params[:restaurant_id]
-      render json: Menu.where(restaurant_id: params[:restaurant_id])
-    else
-      render json: Menu.all
+    menus = Menu.all
+    strong_params = params.permit(:restaurant_id)
+    if strong_params[:restaurant_id].present?
+      menus = menus.where(restaurant_id: strong_params[:restaurant_id])
     end
+    render json: menus
   end
 
   def show
@@ -20,6 +21,22 @@ class MenusController < ApplicationController
     else
       render json: { errors: menu.errors.full_messages }, status: :unprocessable_content
     end
+  end
+
+  def add_item
+    strong_params = params.permit(:menu_item_id)
+
+    item = MenuItem.find(strong_params[:menu_item_id])
+
+    if @menu.menu_items << item
+      render json: @menu, include: :menu_items, status: :ok
+    else
+      render json: { error: "Could not add item to menu." }, status: :unprocessable_content
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "MenuItem not found." }, status: :not_found
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { errors: e.record&.errors&.full_messages }, status: :unprocessable_content
   end
 
   def update
@@ -38,7 +55,8 @@ class MenusController < ApplicationController
   private
 
   def set_menu
-    @menu = Menu.find(params[:id])
+    strong_params = params.permit(:id)
+    @menu = Menu.find(strong_params[:id])
   end
 
   def menu_params

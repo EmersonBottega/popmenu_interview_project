@@ -1,7 +1,12 @@
 Rails.application.routes.draw do
   resources :restaurants
-  resources :menus
   resources :menu_items
+
+  resources :menus do
+    member do
+      post "add_item", to: "menus#add_item", as: 'add_item'
+    end
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

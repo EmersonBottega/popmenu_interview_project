@@ -1,8 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-burger:
-  id: 111
-  menu_id: 298486374
-  name: Burger
-  description: Good Burger
-  price: 9.99
+one:
+  name: Scrambled Eggs
+  price: 4.50
+two:
+  name: Chocolate Cake
+  price: 6.00

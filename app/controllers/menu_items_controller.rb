@@ -2,15 +2,11 @@ class MenuItemsController < ApplicationController
   before_action :set_menu_item, only: %i[show update destroy]
 
   def index
-    if params[:menu_id]
-      render json: MenuItem.where(menu_id: params[:menu_id])
-    else
-      render json: MenuItem.all
-    end
+    render json: MenuItem.all
   end
 
   def show
-    render json: @menu_item
+    render json: @menu_item, include: :menus
   end
 
   def create
@@ -42,6 +38,6 @@ class MenuItemsController < ApplicationController
   end
 
   def menu_item_params
-    params.require(:menu_item).permit(:name, :description, :price, :menu_id)
+    params.require(:menu_item).permit(:name, :description, :price)
   end
 end
