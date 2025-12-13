@@ -26,7 +26,7 @@ PostgreSQL:	16.x
 This environment fully supports Rails 7 and its PostgreSQL integration.
 
 ---
-### Level 1 — Read-Only Public Endpoints
+### Level 1️⃣ — Read-Only Public Endpoints
 
 These endpoints expose menu and menu item information to clients.
 
@@ -42,7 +42,7 @@ Behavior:
 - Menus include their menu items
 - Controllers return JSON-formatted data
 ---
-### Level 2 — Restaurant CRUD
+### Level 2️⃣ — Restaurant CRUD
 
 Full CRUD operations for managing restaurants.
 
@@ -74,6 +74,41 @@ Implemented Behavior:
 - Standard REST status codes (201, 200, 422, 204) are maintained.
 
 ---
+### Level 3️⃣ — JSON Data Import
+This level introduces a data pipeline to serialize and persist JSON structures into the application models.
+
+New endpoint created:
+- POST /restaurants/import - Accepts a JSON payload and imports/persists all nested restaurant, menu, and menu item data.
+
+#### 🔧 Import Tool Availability
+
+The conversion tool is implemented as the RestaurantDataImporter Service Object, which contains detailed internal comments explaining the logic flow, validation points, and rollback mechanisms, and is available in two ways:
+- HTTP Endpoint (API): For real-time, remote ingestion (e.g., client application).
+- Rake Task (CLI): For batch processing, initial seeding, or scheduled jobs.
+
+**A. Import via CLI (Command Line Interface)**
+
+The tool can be executed directly using a Rake task, specifying the path to the JSON file via the FILE environment variable.
+
+Usage:
+```
+bundle exec rake import:restaurant_data FILE=data/restaurant_data.json
+```
+
+Output: The task prints a detailed log to the console, showing the General Status and a log entry (success, warning, or fail) for every processed menu item.
+
+**B. Import via HTTP (cURL Example)**
+To test the API endpoint, the JSON file must be wrapped under the key expected by Strong Parameters (restaurant_data).
+
+Usage:
+```
+curl -X POST http://localhost:3000/restaurants/import \
+  -H "Content-Type: application/json" \
+  -d @data/restaurant_data.json
+```
+Response Status: Returns 200 OK on full success or 422 Unprocessable Content if a critical validation or rollback occurs, containing the logs.
+
+---
 ## 🧠 Design Decisions & Reasoning
 
 ### Level 1
@@ -83,19 +118,13 @@ Implemented Behavior:
 * Implemented basic REST endpoints to expose model data.
 * Prioritized model-level validations and unit tests to ensure data integrity early.
 
+---
 ### Level 2
 
 - Introduced the Restaurant model, allowing a Restaurant to have multiple Menus.
 - Implemented the relationship between Menu and MenuItem as Many-to-Many (N:N) via a join table (has_and_belongs_to_many), fulfilling the requirement that a MenuItem can be on multiple Menus.
 - Enforced global uniqueness on the MenuItem name (validates :name, uniqueness: true), aligning with the explicit Level 2 requirement that "MenuItem names should not be duplicated in the database" (implying global scope) and supports the idea of shared.
 - Custom Endpoint (add_item): A custom POST /menus/:id/add_item was implemented to manage the linking of existing MenuItems to Menus, demonstrating control over the N:N association.
-
-### Testing Strategy
-
-* Focused on **unit tests** for models to validate associations and constraints (presence, uniqueness, relationships).
-* Added **controller/integration tests** to verify REST endpoints and JSON responses.
-* Relied on fixtures with explicit foreign key consistency to mirror realistic relational data.
-* Ensured that each level’s behavior is validated independently, reflecting an iterative development approach.
 
 ### 📊 Unit Tests Explanation for Level 2
 
@@ -115,6 +144,48 @@ Primary Focus: HTTP Endpoints and N:N Relationship Integration.
 - test "should get index filtered by restaurant_id" - Ensures that MenusController#index correctly handles the ?restaurant_id=X query parameter, returning only the menus belonging to the specified restaurant.
 - test "should not create menu without restaurant_id" - Confirms that the controller enforces the business rule requiring every Menu to be associated with a Restaurant upon creation.
 
+---
+### Level 3
+> [!Important]
+> - Design Decisions involving Level 2:
+
+**Before**: Implemented the relationship between Menu and MenuItem as Many-to-Many (N:N) via a join table (has_and_belongs_to_many), fulfilling the requirement that a MenuItem can be on multiple Menus.
+
+**After (current)**: Implemented the relationship between Menu and MenuItem using the custom join table model MenuFoodItem (has_many through), which stores the price. This addresses the N:N requirement and resolves the complexity of variable pricing.
+
+- Service Object Pattern (RestaurantDataImporter): All complex serialization, validation, and database logic are isolated in this Service Object. This keeps the RestaurantsController thin and simplifies testing for the import process.
+- The entire import process runs within an ActiveRecord::Base.transaction.
+- Using save! on models (Restaurant, MenuItem, MenuFoodItem) ensures that any validation failure immediately raises an exception, which is caught by the transaction block and forces an ActiveRecord::Rollback. This guarantees that no partial, invalid data is persisted.
+- Flexible Data Handling: The RestaurantDataImporter dynamically identifies the nested list of items by checking for keys like "menu_items" or "dishes", making the tool resilient to slight variations in the source JSON format.
+- Strong Parameters Enforcement: Requiring the restaurant_data key in the controller to prevent Mass Assignment and clearly define the expected data structure for the API endpoint.
+
+### 📊 Unit Tests Explanation for Level 3
+
+Tests were written using the RSpec framework. To set up the testing environment, run the following command:
+```bash
+bundle install
+```
+
+**Service Specs (restaurant_data_importer_spec.rb): Validates the business logic of the import tool:**
+- Ensures correct model counts (change(MenuItem, :count).by(6)).
+- Verifies that the correct price is associated with the correct menu (e.g., Burger is $9.00 on lunch and $15.00 on dinner).
+- Tests that the unique item log is returned even for items shared across menus.
+- Confirms the atomic rollback behavior upon validation failure (e.g., negative price).
+- Validates that internal JSON duplicates are handled with a warning log and skipped.
+
+**Request Specs (restaurants_import_spec.rb): Validates the API integration:**
+- Ensures correct HTTP status codes (200 OK, 422 Unprocessable Content, 400 Bad Request).
+- Verifies that the successful import returns the expected success: true log structure.
+
+---
+### Testing Strategy
+
+* Focused on **unit tests** for models to validate associations and constraints (presence, uniqueness, relationships).
+* Added **controller/integration tests** to verify REST endpoints and JSON responses.
+* Relied on fixtures with explicit foreign key consistency to mirror realistic relational data.
+* Ensured that each level’s behavior is validated independently, reflecting an iterative development approach.
+
+---
 ## 🧠 Other assumptions
 
 ### 1. Non-Nested Routes
