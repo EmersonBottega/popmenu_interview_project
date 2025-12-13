@@ -26,7 +26,7 @@ class MenusController < ApplicationController
   def add_item
     strong_params = params.permit(:menu_item_id)
 
-    item = MenuItem.find(strong_params[:menu_item_id])
+    item = MenuItem.find_by(id: strong_params[:menu_item_id])
 
     if @menu.menu_items << item
       render json: @menu, include: :menu_items, status: :ok
@@ -56,7 +56,7 @@ class MenusController < ApplicationController
 
   def set_menu
     strong_params = params.permit(:id)
-    @menu = Menu.find(strong_params[:id])
+    @menu = Menu.find_by(id: strong_params[:id])
   end
 
   def menu_params

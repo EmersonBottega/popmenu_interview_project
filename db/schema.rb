@@ -10,25 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_13_030835) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_13_143731) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "menu_food_items", force: :cascade do |t|
+    t.bigint "menu_id", null: false
+    t.bigint "menu_item_id", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["menu_id", "menu_item_id"], name: "index_menu_food_items_on_menu_id_and_menu_item_id", unique: true
+    t.index ["menu_id"], name: "index_menu_food_items_on_menu_id"
+    t.index ["menu_item_id"], name: "index_menu_food_items_on_menu_item_id"
+  end
 
   create_table "menu_items", force: :cascade do |t|
     t.string "name"
     t.text "description"
-    t.decimal "price"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_menu_items_on_name", unique: true
-  end
-
-  create_table "menu_items_menus", id: false, force: :cascade do |t|
-    t.bigint "menu_id", null: false
-    t.bigint "menu_item_id", null: false
-    t.index ["menu_id", "menu_item_id"], name: "index_menu_items_menus_on_menu_id_and_menu_item_id", unique: true
-    t.index ["menu_id"], name: "index_menu_items_menus_on_menu_id"
-    t.index ["menu_item_id"], name: "index_menu_items_menus_on_menu_item_id"
   end
 
   create_table "menus", force: :cascade do |t|
@@ -47,5 +49,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_13_030835) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "menu_food_items", "menu_items"
+  add_foreign_key "menu_food_items", "menus"
   add_foreign_key "menus", "restaurants"
 end

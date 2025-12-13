@@ -35,7 +35,7 @@ class MenuItemsController < ApplicationController
 
   def set_menu_item
     strong_params = params.permit(:id)
-    @menu_item = MenuItem.find(strong_params[:id])
+    @menu_item = MenuItem.find_by(id: strong_params[:id])
   end
 
   def menu_item_params
