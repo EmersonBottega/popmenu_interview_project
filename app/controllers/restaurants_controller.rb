@@ -34,7 +34,8 @@ class RestaurantsController < ApplicationController
   private
 
   def set_restaurant
-    @restaurant = Restaurant.find(params[:id])
+    strong_params = params.permit(:id)
+    @restaurant = Restaurant.find(strong_params[:id])
   end
 
   def restaurant_params
