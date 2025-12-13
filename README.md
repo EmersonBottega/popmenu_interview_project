@@ -98,7 +98,8 @@ bundle exec rake import:restaurant_data FILE=data/restaurant_data.json
 Output: The task prints a detailed log to the console, showing the General Status and a log entry (success, warning, or fail) for every processed menu item.
 
 **B. Import via HTTP (cURL Example)**
-The HTTP endpoint requires the payload to be wrapped under the key restaurant_data to satisfy Rails' Strong Parameters (params.require(:restaurant_data)). Therefore, there is a file with that contains this encapsulation (restaurant_data_with_encapsulate_key.json).
+
+The HTTP endpoint requires the payload to be wrapped under the key restaurant_data to satisfy Rails' Strong Parameters (params.require(:restaurant_data)). Therefore, there is a file that contains this encapsulation (restaurant_data_with_encapsulate_key.json).
 
 Usage:
 ```
