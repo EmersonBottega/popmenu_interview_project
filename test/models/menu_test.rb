@@ -18,15 +18,21 @@ class MenuTest < ActiveSupport::TestCase
     assert_includes menu.errors[:restaurant], "must exist"
   end
 
-  test "can have multiple menu items" do
+  test "can have multiple menu items by explicitly creating join records" do
     menu = menus(:one)
-    item1 = menu_items(:one)
+    initial_count = menu.menu_items.count
+
+    item1 = menu_items(:three)
     item2 = menu_items(:two)
 
-    menu.menu_items << item1
-    menu.menu_items << item2
+    menu.menu_food_items.create!(menu_item: item1, price: 10.99)
 
-    assert_equal 2, menu.menu_items.count
+    menu.menu_food_items.create!(menu_item: item2, price: 5.50)
+
+    menu.reload
+
+    assert_equal initial_count + 2, menu.menu_items.count
+
     assert_includes menu.menu_items, item1
     assert_includes menu.menu_items, item2
   end

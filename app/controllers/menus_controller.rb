@@ -24,14 +24,18 @@ class MenusController < ApplicationController
   end
 
   def add_item
-    strong_params = params.permit(:menu_item_id)
+    strong_params = params.permit(:menu_item_id, :price)
+    item = MenuItem.find_by!(id: strong_params[:menu_item_id])
 
-    item = MenuItem.find_by(id: strong_params[:menu_item_id])
+    join_record = @menu.menu_food_items.new(
+      menu_item: item,
+      price: strong_params[:price]
+    )
 
-    if @menu.menu_items << item
-      render json: @menu, include: :menu_items, status: :ok
+    if join_record.save
+      render json: @menu.reload, include: :menu_items, status: :ok
     else
-      render json: { error: "Could not add item to menu." }, status: :unprocessable_content
+      render json: { errors: join_record.errors.full_messages }, status: :unprocessable_content
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "MenuItem not found." }, status: :not_found

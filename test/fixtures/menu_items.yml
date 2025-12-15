@@ -2,7 +2,10 @@
 
 one:
   name: Scrambled Eggs
-  price: 4.50
+  description: Fluffy eggs.
 two:
   name: Chocolate Cake
-  price: 6.00
+  description: Rich chocolate cake.
+three:
+  name: House Burger
+  description: Our famous burger.

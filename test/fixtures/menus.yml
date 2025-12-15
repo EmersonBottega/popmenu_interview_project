@@ -2,7 +2,9 @@
 
 one:
   name: Daily Specials
+  description: Today's dishes.
   restaurant: one
 two:
   name: Dessert Menu
+  description: Sweet treats.
   restaurant: one

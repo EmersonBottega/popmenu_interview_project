@@ -1,5 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: Poppo's Test Diner
-  description: The best food in town.
+  menu: one
+  menu_item: one
+  price: 5.99
+
+two:
+  menu: two
+  menu_item: two
+  price: 8.50

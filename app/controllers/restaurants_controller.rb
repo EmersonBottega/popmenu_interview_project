@@ -57,6 +57,10 @@ class RestaurantsController < ApplicationController
   def set_restaurant
     strong_params = params.permit(:id)
     @restaurant = Restaurant.find_by(id: strong_params[:id])
+
+    unless @restaurant
+      render json: { error: "Restaurant not found" }, status: :not_found
+    end
   end
 
   def restaurant_params
