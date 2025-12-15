@@ -259,3 +259,19 @@ render json: @restaurant, include: { menus: { include: :menu_items } }
 
 > [!Important]
 > - These decisions were made trying to keep the balance between realism, simplicity, and extensibility, while following the incremental progression requested in the project.
+
+### ✅ Conclusion & Project Status
+
+This project was developed incrementally, following the requirements and constraints of each level.
+
+- **Level 1** established a clean, read-only public API with clear data exposure.
+- **Level 2** introduced full CRUD operations, strict validations, and relational integrity.
+- **Level 3** extended the system with a JSON import pipeline.
+
+The architecture emphasizes:
+- Clear separation of concerns (Controllers, Models, Services)
+- Strong validation at the model layer
+- Transactional safety for operations
+- Comprehensive test coverage across models, controllers, and services
+
+Thank you for taking the time to review this project!
