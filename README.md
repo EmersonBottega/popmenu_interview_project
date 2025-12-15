@@ -127,7 +127,7 @@ Response Status: Returns 200 OK on full success or 422 Unprocessable Content if 
 - Enforced global uniqueness on the MenuItem name (validates :name, uniqueness: true), aligning with the explicit Level 2 requirement that "MenuItem names should not be duplicated in the database" (implying global scope) and supports the idea of shared.
 - Custom Endpoint (add_item): A custom POST /menus/:id/add_item was implemented to manage the linking of existing MenuItems to Menus, demonstrating control over the N:N association.
 
-### 📊 Unit Tests Explanation for Level 2
+### 📊 Unit Tests Explanation for Level 2:
 
 **1 - Model Tests (menu_item_test.rb and menu_test.rb)**
 
@@ -157,24 +157,66 @@ Primary Focus: HTTP Endpoints and N:N Relationship Integration.
 - Service Object Pattern (RestaurantDataImporter): All complex serialization, validation, and database logic are isolated in this Service Object. This keeps the RestaurantsController thin and simplifies testing for the import process.
 - The entire import process runs within an ActiveRecord::Base.transaction.
 - Using save! on models (Restaurant, MenuItem, MenuFoodItem) ensures that any validation failure immediately raises an exception, which is caught by the transaction block and forces an ActiveRecord::Rollback. This guarantees that no partial, invalid data is persisted.
-- Flexible Data Handling: The RestaurantDataImporter dynamically identifies the nested list of items by checking for keys like "menu_items" or "dishes", making the tool resilient to slight variations in the source JSON format.
 - Strong Parameters Enforcement: Requiring the restaurant_data key in the controller to prevent Mass Assignment and clearly define the expected data structure for the API endpoint.
 
-### 📊 Unit Tests Explanation for Level 3
+### 📊 Unit Tests Explanation for Level 3:
 
-Tests were written using the RSpec framework. To set up the testing environment, run the following command:
+### 🧪 Model Tests (ActiveSupport::TestCase)
+Primary Focus: Data integrity, validations, and association rules introduced in Level 3.
+
+These tests validate that:
+
+**MenuItem global uniqueness remains enforced:**
+- Ensures imported items cannot violate the validates :name, uniqueness: true constraint.
+
+**Menu ↔ MenuItem N:N association is enforced via MenuFoodItem:**
+- A MenuItem can belong to multiple Menus.
+- A Menu can contain multiple MenuItems.
+- The same MenuItem cannot be added twice to the same Menu.
+
+**Join model constraints are respected**
+
+Validates that MenuFoodItem:
+- Requires a price
+- Enforces uniqueness on [menu_id, menu_item_id]
+- Raises an exception when duplication is attempted (used by both API and import logic).
+
+**Cascade behavior remains correct**
+- Confirms that destroying a Restaurant removes its dependent Menus without leaving orphaned records.
+
+### 🧪 Controller / Integration Tests (ActionDispatch::IntegrationTest)
+Primary Focus: REST API stability and consistency after Level 3 changes.
+
+These tests ensure that:
+
+**All Level 1 public endpoints still behave as documented:**
+- GET /menus
+- GET /menus/:id
+- GET /menu_items
+- GET /menu_items/:id
+
+**All Level 2 CRUD endpoints remain functional:**
+Full CRUD for Restaurants
+
+- Menu creation requires restaurant_id
+- Menu filtering by restaurant_id
+- POST /menus/:id/add_item still enforces pricing and uniqueness rules
+- HTTP status codes and JSON structures remain consistent
+- 200 OK, 201 Created, 422 Unprocessable Content, 404 Not Found, 204 No Content
+
+### 🧪 Import tests were written using the RSpec framework. To set up the testing environment, run the following command:
 ```bash
 bundle install
 ```
 
-**Service Specs (restaurant_data_importer_spec.rb): Validates the business logic of the import tool:**
+Service Specs (restaurant_data_importer_spec.rb): Validates the business logic of the import tool:
 - Ensures correct model counts (change(MenuItem, :count).by(6)).
 - Verifies that the correct price is associated with the correct menu (e.g., Burger is $9.00 on lunch and $15.00 on dinner).
 - Tests that the unique item log is returned even for items shared across menus.
 - Confirms the atomic rollback behavior upon validation failure (e.g., negative price).
 - Validates that internal JSON duplicates are handled with a warning log and skipped.
 
-**Request Specs (restaurants_import_spec.rb): Validates the API integration:**
+Request Specs (restaurants_import_spec.rb): Validates the API integration:
 - Ensures correct HTTP status codes (200 OK, 422 Unprocessable Content, 400 Bad Request).
 - Verifies that the successful import returns the expected success: true log structure.
 
