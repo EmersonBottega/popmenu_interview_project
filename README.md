@@ -204,7 +204,8 @@ Full CRUD for Restaurants
 - HTTP status codes and JSON structures remain consistent
 - 200 OK, 201 Created, 422 Unprocessable Content, 404 Not Found, 204 No Content
 
-### 🧪 Import tests were written using the RSpec framework. To set up the testing environment, run the following command:
+### 🧪 Import tests were written using the RSpec framework
+To set up the testing environment, run the following command:
 ```bash
 bundle install
 ```
